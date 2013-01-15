@@ -1,0 +1,76 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context.xsd
+    http://www.springframework.org/schema/aop
+    http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <context:annotation-config/>
+    <context:component-scan base-package="by.minsler.aspect"/>
+
+
+    <bean id="complexAddress" class="by.minsler.bean.CopmlexAddress" scope="prototype">
+        <property name="name" value="complexAddress"/>
+    </bean>
+
+
+    <bean id="simpleAddress"
+          class="by.minsler.bean.SimpleAddress"
+          scope="prototype">
+        <property name="street" value="kolosa"></property>
+        <property name="alias">
+            <set>
+                <value>"koloska"</value>
+                <value>"cumovska"</value>
+                <value>"centralna"</value>
+            </set>
+        </property>
+        <property name="buildingMap">
+            <map>
+                <entry key="1" value="1987"/>
+                <entry key="2" value="1987"/>
+                <entry key="4" value="1988"/>
+            </map>
+        </property>
+    </bean>
+
+
+    <bean id="minsler"
+          class="by.minsler.bean.Person"
+          scope="prototype">
+        <property name="name" value="Minsler"/>
+        <property name="id" value="1"/>
+    </bean>
+
+
+    <aop:config>
+
+        <aop:pointcut id="performance" expression="execution(* by.minsler.aspect.TaskService.performJob())"/>
+        <aop:pointcut id="performanceException"
+                      expression="execution(* by.minsler.aspect.TaskService.performJobException())"/>
+        <aop:pointcut id="performanceAround"
+                      expression="execution(* by.minsler.aspect.TaskService.performJobAround())"/>
+        <aop:pointcut id="performanceNameTitle"
+                      expression="execution(* by.minsler.aspect.TaskService.performJob(String,String)) and args(name,title)"/>
+
+        <aop:aspect ref="work">
+            <aop:before method="beforeWork"
+                        pointcut-ref="performance"/>
+            <aop:before method="interceptWorkNameTitle"
+                        pointcut-ref="performanceNameTitle"
+                        arg-names="name,title"
+                    />
+            <aop:after-returning method="afterWork"
+                                 pointcut-ref="performance"/>
+            <aop:after-throwing method="afterWorkProblems"
+                                pointcut-ref="performanceException"/>
+
+            <aop:around method="aroundWork"
+                        pointcut-ref="performanceAround"/>
+        </aop:aspect>
+    </aop:config>
+</beans>
